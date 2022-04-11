@@ -4,11 +4,21 @@ public class GameManager : MonoBehaviour
 {
     public ParticleSystem orangeExplosion, blueExplosion, collisionEffect, yellowExplosion;
 
-    public int score = 0;
+    public int score;
+    public string playerName;
+
+    private void Start()
+    {
+        score = 0;
+        playerName = "Character 01";
+    }
     public void OrangeDestroy(Asteroid asteroid)
     {
         this.orangeExplosion.transform.position = asteroid.transform.position;
         this.orangeExplosion.Play();
+
+        // increase score
+        score += (int)(asteroid.size / asteroid.maxSize * 100);
     }
 
     public void BlueDestroy(Bullet bullet)
