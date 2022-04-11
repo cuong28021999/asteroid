@@ -14,6 +14,7 @@ public class Asteroid : MonoBehaviour
     private SpriteRenderer sr;
     private Rigidbody2D rb;
     private BoxCollider2D bc;
+    public int countingShoot;
 
 
     private void Awake()
@@ -36,6 +37,8 @@ public class Asteroid : MonoBehaviour
         this.transform.localScale = Vector3.one * this.size; // Vector3.one = Vector3(1,1,1)
         rb.mass = this.size * 3f; // instead of random speed
         bc.isTrigger = true;
+
+        countingShoot = 0;
     }
 
     public void SetTrajectory(Vector2 direction)
@@ -67,6 +70,8 @@ public class Asteroid : MonoBehaviour
 
                 Destroy(this.gameObject);
             }
+
+            countingShoot++;
 
             // hp > 0
             // decrease hp

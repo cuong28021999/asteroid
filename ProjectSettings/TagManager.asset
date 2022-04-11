@@ -50,6 +50,9 @@ TagManager:
   - name: asteroid
     uniqueID: 2181814603
     locked: 0
+  - name: cracked
+    uniqueID: 785260013
+    locked: 0
   - name: boundary
     uniqueID: 2477553995
     locked: 0
