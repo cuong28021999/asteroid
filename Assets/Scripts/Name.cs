@@ -5,11 +5,17 @@ public class Name : MonoBehaviour
 {
 
     public Text playerName;
-    public GameManager gameManager;
 
     private void Start()
     {
-        playerName.text = gameManager.playerName;
+        // get name
+        if (!PlayerPrefs.HasKey("playerName"))
+        {
+            playerName.text = "";
+        } else
+        {
+            playerName.text = PlayerPrefs.GetString("playerName");
+        }
     }
 
     private void Update()
