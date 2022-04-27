@@ -1,7 +1,8 @@
 using UnityEngine;
 using Cinemachine;
+using Mirror;
 
-public class Player : MonoBehaviour
+public class Player : NetworkBehaviour
 {
     private Rigidbody2D rb;
 
@@ -48,8 +49,10 @@ public class Player : MonoBehaviour
     }
 
     // Update is called once per frame
+    [Client]
     public void Update()
     {
+        if (!hasAuthority) return;
         // input
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
@@ -110,6 +113,19 @@ public class Player : MonoBehaviour
     }
 
     private void FixedUpdate()
+    {
+        CmdMove();
+    }
+
+    [Command]
+    private void CmdMove()
+    {
+        //validate
+        RpcMove();
+    }
+
+    [ClientRpc]
+    private void RpcMove()
     {
         // movement position
         rb.AddForce(movement * moveSpeed);
