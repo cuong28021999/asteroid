@@ -1,9 +1,16 @@
 using UnityEngine;
 using Cinemachine;
+using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
+
+    // character
+    public CharacterDatabase characterDB;
+    public SpriteRenderer artworkSprite;
+    public int selectedOption = 0;
 
     // move variables
     public float moveSpeed = 5f;
@@ -37,6 +44,17 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
+        if (!PlayerPrefs.HasKey("selectedOption"))
+        {
+            selectedOption = 0;
+        }
+        else
+        {
+            Load();
+        }
+
+        UpdateCharacter(selectedOption);
+
         currentHealth = maxHealth;
         currentMana = 0;
         StartCharging();
@@ -50,7 +68,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     public void Update()
     {
-        // input
+        // input move
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
@@ -75,12 +93,14 @@ public class Player : MonoBehaviour
                     isBoosting = false;
                     isStartCharging = false;
                     WaitFor(3f, nameof(StartCharging));
-                } else
+                }
+                else
                 {
                     currentMana -= manaScale * 0.7f;
                 }
             }
-        } else
+        }
+        else
         {
             isBoosting = false;
             moveSpeed = normalSpeed;
@@ -124,51 +144,67 @@ public class Player : MonoBehaviour
     private void Shoot()
     {
         Bullet bullet = Instantiate(this.bulletPrefab, this.transform.position, this.transform.rotation);
-        bullet.Project(this.transform.up, isBoosting);
+        Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
+        bullet.gameObject.GetComponent<SpriteRenderer>().color = bulletColor;
+        bullet.Project(this.transform.up, isBoosting, bulletColor);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // damage with velocity
-        int newDamge = (int)Mathf.Round(velocity) + 2;
-        TakeDamage(newDamge);
+        int newDamage = (int)Mathf.Round(velocity) + 2;
+        TakeDamage(newDamage);
         Vector3 point = collision.contacts[0].point;
 
         FindObjectOfType<GameManager>().ImpactEffectStart(point);
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (FindObjectOfType<GameManager>().collisionEffect.isStopped)
+    /*    private void OnCollisionStay2D(Collision2D collision)
         {
-            // damage with velocity
-            int newDamge = (int)Mathf.Round(velocity) + 2;
-            TakeDamage(newDamge);
-            Vector3 point = collision.contacts[0].point;
-            FindObjectOfType<GameManager>().ImpactEffectStart(point);
-       
-        }
-    }
+            if (FindObjectOfType<GameManager>().collisionEffect.isStopped)
+            {
+                // damage with velocity
+                int newDamage = (int)Mathf.Round(velocity) + 2;
+                TakeDamage(newDamage);
+                Vector3 point = collision.contacts[0].point;
+                FindObjectOfType<GameManager>().ImpactEffectStart(point);
+
+            }
+        }*/
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Energy")
         {
-             isChargingEnergy = true;
-             WaitFor(0.4f, nameof(StopChargeEnergy));
+            isChargingEnergy = true;
+            WaitFor(0.4f, nameof(StopChargeEnergy));
         }
     }
 
     public void TakeDamage(int newDamage)
     {
-        // not control health <= 0 yet
         if (currentHealth - newDamage <= maxHealth)
         {
             currentHealth -= newDamage;
-        } else
+        }
+        else
         {
             currentHealth = maxHealth;
         }
+
+        if (currentHealth <= 0)
+        {
+            // game over
+
+            // save score
+            Save();
+
+            // change to game over scene
+            int currentSceneId = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(currentSceneId + 1);
+        }
+
+
         FindObjectOfType<HealthBar>().SetHealth(currentHealth);
     }
 
@@ -185,5 +221,34 @@ public class Player : MonoBehaviour
     void StartCharging()
     {
         isStartCharging = true;
-    } 
+    }
+
+    private void UpdateCharacter(int i)
+    {
+        Character character = characterDB.GetCharacter(i);
+        artworkSprite = Instantiate(character.characterSprite, transform);
+        artworkSprite.transform.localScale *= 0.3f;
+        artworkSprite.transform.parent = gameObject.transform;
+
+        // scale light
+        Light2D[] lights = artworkSprite.gameObject.GetComponentsInChildren<Light2D>();
+        lights[0].pointLightInnerRadius *= 0.3f;
+        lights[0].pointLightOuterRadius *= 0.3f;
+        lights[1].pointLightOuterRadius *= 0.3f;
+        lights[1].pointLightInnerRadius *= 0.3f;
+        if (lights.Length == 3)
+        {
+            lights[2].pointLightOuterRadius *= 0.3f;
+            lights[2].pointLightInnerRadius *= 0.3f;
+        }
+    }
+
+    private void Load()
+    {
+        selectedOption = PlayerPrefs.GetInt("selectedOption");
+    }
+
+    private void Save() {
+        PlayerPrefs.SetInt("score", FindObjectOfType<GameManager>().score);
+    }
 }
