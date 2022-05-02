@@ -1,7 +1,8 @@
 using UnityEngine;
 
 [System.Serializable]
-public class Character
+[CreateAssetMenu]
+public class Character : ScriptableObject
 {
     public SpriteRenderer characterSprite;
     public Color bulletColor;

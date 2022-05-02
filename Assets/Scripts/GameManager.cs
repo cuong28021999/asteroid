@@ -4,6 +4,11 @@ public class GameManager : MonoBehaviour
 {
     public ParticleSystem orangeExplosion, blueExplosion, collisionEffect, yellowExplosion;
 
+    [SerializeField]
+    private GUILayout guiInGame;
+
+    public bool isPlaying = false;
+
     public int score;
 
     private void Start()

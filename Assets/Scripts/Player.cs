@@ -7,13 +7,14 @@ using UnityEngine.SceneManagement;
 public class Player : NetworkBehaviour
 {
     private Rigidbody2D rb;
+    private CinemachineVirtualCamera cinecam;
 
-    // character
+    [Header("Character")]
     public CharacterDatabase characterDB;
     public SpriteRenderer artworkSprite;
     public int selectedOption = 0;
 
-    // move variables
+    [Header("Move variables")]
     public float moveSpeed = 5f;
     public float normalSpeed = 5f;
     public float boostSpeed = 10f;
@@ -25,13 +26,13 @@ public class Player : NetworkBehaviour
     private Vector2 turn;
     private float angle;
 
-    public Bullet bulletPrefab;
+    public GameObject bulletPrefab;
 
-    // health
+    [Header("Health")]
     public int maxHealth = 500;
     public int currentHealth;
 
-    // mana for boosting
+    [Header("Boosting")]
     public float maxMana = 100f;
     public float currentMana;
     public float manaScale = 1f;
@@ -41,6 +42,8 @@ public class Player : NetworkBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        cinecam = FindObjectOfType<CinemachineVirtualCamera>();
+
     }
 
     private void Start()
@@ -53,7 +56,8 @@ public class Player : NetworkBehaviour
         {
             Load();
         }
-
+        cinecam.m_Follow = rb.transform;
+        cinecam.m_LookAt = rb.transform;
         UpdateCharacter(selectedOption);
 
         currentHealth = maxHealth;
@@ -148,7 +152,7 @@ public class Player : NetworkBehaviour
     private void RpcMove()
     {
         // movement position
-        rb.AddForce(movement * moveSpeed);
+        rb.AddForce(this.transform.up * moveSpeed);
 
         // rotate
         turn = Camera.main.ScreenToWorldPoint(Input.mousePosition) - rb.transform.position;
@@ -157,12 +161,15 @@ public class Player : NetworkBehaviour
         rb.transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, angle), turnSpeed * Time.fixedDeltaTime);
     }
 
+    [Command]
     private void Shoot()
     {
-        Bullet bullet = Instantiate(this.bulletPrefab, this.transform.position, this.transform.rotation);
+        GameObject bullet = Instantiate(this.bulletPrefab, this.transform.position, this.transform.rotation);
         Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
-        bullet.gameObject.GetComponent<SpriteRenderer>().color = bulletColor;
-        bullet.Project(this.transform.up, isBoosting, bulletColor);
+        bullet.GetComponent<SpriteRenderer>().color = bulletColor;
+        bullet.GetComponent<Bullet>().Project(this.transform.up, isBoosting, bulletColor);
+        NetworkServer.Spawn(bullet);
+
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -243,7 +250,7 @@ public class Player : NetworkBehaviour
     {
         Character character = characterDB.GetCharacter(i);
         artworkSprite = Instantiate(character.characterSprite, transform);
-        artworkSprite.transform.localScale *= 0.3f;
+        artworkSprite.transform.localScale *= 3f;
         artworkSprite.transform.parent = gameObject.transform;
 
         // scale light

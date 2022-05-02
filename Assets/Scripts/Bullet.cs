@@ -1,6 +1,7 @@
 using UnityEngine;
+using Mirror;
 
-public class Bullet : MonoBehaviour
+public class Bullet : NetworkBehaviour
 {
     public float speed = 750f;
     public float maxLifetime = 2f;
@@ -13,6 +14,7 @@ public class Bullet : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    [Server]
     public void Project(Vector2 direction, bool isBoosting, Color c)
     {
         color = c;
@@ -41,7 +43,7 @@ public class Bullet : MonoBehaviour
 
     private void OnExplosion()
     {
-        FindObjectOfType<GameManager>().BlueDestroy(this, color);
+        //FindObjectOfType<GameManager>().BlueDestroy(this, color);
 
         Destroy(this.gameObject);
     }

@@ -14,6 +14,7 @@ public class CinemachineCamera : MonoBehaviour
 
     private void Update()
     {
+        return;
         Player player = FindObjectOfType<Player>();
         float offset = player.velocity / DefaultOrthographicSize;
         if (player.isBoosting)

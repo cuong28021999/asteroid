@@ -13,9 +13,6 @@ MonoBehaviour:
   m_Name: New Character Database
   m_EditorClassIdentifier: 
   characters:
-  - characterSprite: {fileID: 8037156903799578214, guid: aa1ed1f4c4022994c8e63a1a0a8497d8, type: 3}
-    bulletColor: {r: 0.2783019, g: 0.65478694, b: 1, a: 1}
-  - characterSprite: {fileID: 7108238090300400151, guid: efe65161ef6ec904397a543d26772b66, type: 3}
-    bulletColor: {r: 0.9339623, g: 0.15419187, b: 0.15419187, a: 1}
-  - characterSprite: {fileID: 1697336394383432682, guid: 2c92109f5b91f8545a428deec402e457, type: 3}
-    bulletColor: {r: 0.32039872, g: 0.9056604, b: 0.40964258, a: 1}
+  - {fileID: 11400000, guid: d6a1a540741954bcdb371dc342d057ca, type: 2}
+  - {fileID: 11400000, guid: 2ad1018b54a07438ab73a8c223bc9449, type: 2}
+  - {fileID: 11400000, guid: 17e41d1f355a9427da5346414a96f83f, type: 2}
