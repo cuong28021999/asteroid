@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
 
     public void ImpactEffectStart(Vector3 position)
     {
+        return; //fix this on online scene
         this.collisionEffect.transform.position = position;
         this.collisionEffect.Play();
     }

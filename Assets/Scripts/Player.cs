@@ -56,9 +56,12 @@ public class Player : NetworkBehaviour
         {
             Load();
         }
-        cinecam.m_Follow = rb.transform;
-        cinecam.m_LookAt = rb.transform;
-        UpdateCharacter(selectedOption);
+
+        if(hasAuthority) {
+            cinecam.m_Follow = rb.transform;
+            cinecam.m_LookAt = rb.transform;
+            UpdateCharacter(selectedOption);
+        }
 
         currentHealth = maxHealth;
         currentMana = 0;
@@ -136,9 +139,12 @@ public class Player : NetworkBehaviour
         velocity = rb.velocity.magnitude;
     }
 
-    private void FixedUpdate()
+    public void FixedUpdate()
     {
-        CmdMove();
+        if(hasAuthority) {
+            CmdMove();
+        }
+        
     }
 
     [Command]
