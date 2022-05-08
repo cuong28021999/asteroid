@@ -47,11 +47,17 @@ public class Bullet : NetworkBehaviour
     [Server]
     void DestroySelf()
     {
+        
         NetworkServer.Destroy(gameObject);
     }
 
     // ServerCallback because we don't want a warning
     // if OnTriggerEnter is called on the client
     [ServerCallback]
-    void OnTriggerEnter2D(Collider2D co) => DestroySelf();
+    void OnTriggerEnter2D(Collider2D other) {
+        if(other.gameObject.name != "Boundary") {
+            Debug.Log("OnTriggerEnter2D" + other.gameObject.name);
+        }
+        DestroySelf();
+    } 
 }

@@ -57,21 +57,32 @@ public class Player : NetworkBehaviour
     }
 
     public override void OnStartClient()
-    {
-        Debug.Log("On Start Client");
+    {   
+        RespawnPlayer();
         UpdateCharacter(selectedOption);
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        Debug.Log("OnStartLocalPlayer");
+
+        // // Set isLocalPlayer for this Player in UI for background shading
+        // playerUI.SetLocalPlayer();
+
+        // Activate the main panel
+        // CanvasUI.instance.mainPanel.gameObject.SetActive(true);
     }
 
     private void Start()
     {
-        
-
         if(hasAuthority) {
             cinecam.m_Follow = rb.transform;
             cinecam.m_LookAt = rb.transform;
             
         }
+    }
 
+    void RespawnPlayer() {
         currentHealth = maxHealth;
         currentMana = 0;
         StartCharging();
@@ -176,8 +187,10 @@ public class Player : NetworkBehaviour
 
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
+    [ServerCallback]
+    void OnCollisionEnter2D(Collision2D collision)
+    {   
+        Debug.Log("Player Collision 2D ->" + collision.gameObject.name);
         // damage with velocity
         int newDamage = (int)Mathf.Round(velocity) + 2;
         TakeDamage(newDamage);
@@ -200,8 +213,9 @@ public class Player : NetworkBehaviour
         }*/
 
     [ServerCallback]
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
+    void OnTriggerEnter2D(Collider2D collision)
+    {   
+        Debug.Log("OnTriggerEnter2D______PLAYER???");
         // if (collision.gameObject.tag == "Energy")
         // {
         //     isChargingEnergy = true;
