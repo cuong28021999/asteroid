@@ -12,6 +12,8 @@ public class Player : NetworkBehaviour
     [Header("Character")]
     public CharacterDatabase characterDB;
     public SpriteRenderer artworkSprite;
+
+    public Transform firePoint;
     public int selectedOption = 0;
 
     [Header("Move variables")]
@@ -43,11 +45,6 @@ public class Player : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         cinecam = FindObjectOfType<CinemachineVirtualCamera>();
-
-    }
-
-    private void Start()
-    {
         if (!PlayerPrefs.HasKey("selectedOption"))
         {
             selectedOption = 0;
@@ -57,10 +54,22 @@ public class Player : NetworkBehaviour
             Load();
         }
 
+    }
+
+    public override void OnStartClient()
+    {
+        Debug.Log("On Start Client");
+        UpdateCharacter(selectedOption);
+    }
+
+    private void Start()
+    {
+        
+
         if(hasAuthority) {
             cinecam.m_Follow = rb.transform;
             cinecam.m_LookAt = rb.transform;
-            UpdateCharacter(selectedOption);
+            
         }
 
         currentHealth = maxHealth;
@@ -82,98 +91,87 @@ public class Player : NetworkBehaviour
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
+        if(isLocalPlayer) {
+            // rotate
+            turn = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+            turn.Normalize();
+            angle = Mathf.Atan2(turn.y, turn.x) * Mathf.Rad2Deg - 90;
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, angle), turnSpeed * Time.fixedDeltaTime);
+
+            // shoot
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+            {
+                Shoot();
+            }
+        }
+
         // immediate charge after done delay
         if (Input.GetKeyUp(KeyCode.LeftShift) && currentMana == 0 && FindObjectOfType<CinemachineVirtualCamera>().m_Lens.OrthographicSize == 5f)
         {
             StartCharging();
         }
 
-        // check boosting
-        if (Input.GetKey(KeyCode.LeftShift) && isStartCharging)
-        {
-            isBoosting = true;
-            moveSpeed = boostSpeed;
+        // // check boosting
+        // if (Input.GetKey(KeyCode.LeftShift) && isStartCharging)
+        // {
+        //     isBoosting = true;
+        //     moveSpeed = boostSpeed;
 
-            if (!isChargingEnergy)
-            {
-                // using mana
-                if (currentMana <= 0)
-                {
-                    currentMana = 0;
-                    isBoosting = false;
-                    isStartCharging = false;
-                    WaitFor(3f, nameof(StartCharging));
-                }
-                else
-                {
-                    currentMana -= manaScale * 0.7f;
-                }
-            }
-        }
-        else
-        {
-            isBoosting = false;
-            moveSpeed = normalSpeed;
+        //     if (!isChargingEnergy)
+        //     {
+        //         // using mana
+        //         if (currentMana <= 0)
+        //         {
+        //             currentMana = 0;
+        //             isBoosting = false;
+        //             isStartCharging = false;
+        //             WaitFor(3f, nameof(StartCharging));
+        //         }
+        //         else
+        //         {
+        //             currentMana -= manaScale * 0.7f;
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     isBoosting = false;
+        //     moveSpeed = normalSpeed;
 
-            if (!isChargingEnergy)
-            {
-                // charging mana
-                if (currentMana >= maxMana)
-                {
-                    currentMana = maxMana;
-                }
-                else if (isStartCharging)
-                {
-                    currentMana += manaScale;
-                }
-            }
-        }
-        FindObjectOfType<BoostingBar>().SetMana(currentMana);
+        //     if (!isChargingEnergy)
+        //     {
+        //         // charging mana
+        //         if (currentMana >= maxMana)
+        //         {
+        //             currentMana = maxMana;
+        //         }
+        //         else if (isStartCharging)
+        //         {
+        //             currentMana += manaScale;
+        //         }
+        //     }
+        // }
+        // FindObjectOfType<BoostingBar>().SetMana(currentMana);
 
-        // shoot
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
-        {
-            Shoot();
-        }
-
-        velocity = rb.velocity.magnitude;
+        // velocity = rb.velocity.magnitude;
     }
 
     public void FixedUpdate()
     {
-        if(hasAuthority) {
-            CmdMove();
-        }
+        // only let the local player control the racket.
+        // don't control other player's rackets
+        if (isLocalPlayer)
+            rb.velocity = movement * moveSpeed * Time.fixedDeltaTime;
         
-    }
-
-    [Command]
-    private void CmdMove()
-    {
-        //validate
-        RpcMove();
-    }
-
-    [ClientRpc]
-    private void RpcMove()
-    {
-        // movement position
-        rb.AddForce(this.transform.up * moveSpeed);
-
-        // rotate
-        turn = Camera.main.ScreenToWorldPoint(Input.mousePosition) - rb.transform.position;
-        turn.Normalize();
-        angle = Mathf.Atan2(turn.y, turn.x) * Mathf.Rad2Deg - 90;
-        rb.transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, angle), turnSpeed * Time.fixedDeltaTime);
     }
 
     [Command]
     private void Shoot()
     {
-        GameObject bullet = Instantiate(this.bulletPrefab, this.transform.position, this.transform.rotation);
-        Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
-        bullet.GetComponent<SpriteRenderer>().color = bulletColor;
-        bullet.GetComponent<Bullet>().Project(this.transform.up, isBoosting, bulletColor);
+        GameObject bullet = Instantiate(this.bulletPrefab, transform.position, transform.rotation);
+        // Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
+        // bullet.GetComponent<SpriteRenderer>().color = bulletColor;
+        // bullet.GetComponent<Bullet>().Project(this.transform.up, isBoosting, bulletColor);
         NetworkServer.Spawn(bullet);
 
     }
@@ -201,12 +199,21 @@ public class Player : NetworkBehaviour
             }
         }*/
 
+    [ServerCallback]
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Energy")
-        {
-            isChargingEnergy = true;
-            WaitFor(0.4f, nameof(StopChargeEnergy));
+        // if (collision.gameObject.tag == "Energy")
+        // {
+        //     isChargingEnergy = true;
+        //     WaitFor(0.4f, nameof(StopChargeEnergy));
+        // }
+        
+        if (collision.GetComponent<Bullet>() != null)
+        {   
+            TakeDamage(collision.GetComponent<Bullet>().damage);
+            // currentHealth -= collision.GetComponent<Bullet>().damage;
+            if (currentHealth <= 0)
+                NetworkServer.Destroy(gameObject);
         }
     }
 
@@ -223,16 +230,16 @@ public class Player : NetworkBehaviour
 
         if (currentHealth <= 0)
         {
-            // game over
+            NetworkServer.Destroy(gameObject);
+            // // game over
 
-            // save score
-            Save();
+            // // save score
+            // Save();
 
-            // change to game over scene
-            int currentSceneId = SceneManager.GetActiveScene().buildIndex;
-            SceneManager.LoadScene(currentSceneId + 1);
+            // // change to game over scene
+            // int currentSceneId = SceneManager.GetActiveScene().buildIndex;
+            // SceneManager.LoadScene(currentSceneId + 1);
         }
-
 
         FindObjectOfType<HealthBar>().SetHealth(currentHealth);
     }
@@ -254,6 +261,7 @@ public class Player : NetworkBehaviour
 
     private void UpdateCharacter(int i)
     {
+        // Debug.Log()
         Character character = characterDB.GetCharacter(i);
         artworkSprite = Instantiate(character.characterSprite, transform);
         artworkSprite.transform.localScale *= 3f;
