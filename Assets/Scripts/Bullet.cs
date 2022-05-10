@@ -7,12 +7,19 @@ public class Bullet : NetworkBehaviour
     public float maxLifetime = 2f;
     public int damage = 20;
 
+    [SyncVar]
+    public Player owner = null;
+
     public Color color;
     private Rigidbody2D rb;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    public void setPlayer(Player p) {
+        this.owner = p;
     }
 
     public void Project(Vector2 direction, bool isBoosting, Color c)
@@ -33,7 +40,21 @@ public class Bullet : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        
         Invoke(nameof(DestroySelf), maxLifetime);
+        // Debug.Log("New Bullet Created::" + this.owner);
+        // OnCreateBullet();
+    }
+
+    public override void OnStartClient()
+    {
+        // base.OnStartClient();
+        Debug.Log("New Bullet Created::" + this.owner.netId);
+    }
+
+    [ClientRpc]
+    public void OnCreateBullet() {
+        Debug.Log("New Bullet Created::" + this.owner);
     }
 
     // set velocity for server and client. this way we don't have to sync the
@@ -55,9 +76,12 @@ public class Bullet : NetworkBehaviour
     // if OnTriggerEnter is called on the client
     [ServerCallback]
     void OnTriggerEnter2D(Collider2D other) {
-        if(other.gameObject.name != "Boundary") {
-            Debug.Log("OnTriggerEnter2D" + other.gameObject.name);
+        // if(other.gameObject.name != "Boundary") {
+        //     Debug.Log("OnTriggerEnter2D" + other.gameObject.name);
+        // }
+        if(other.GetComponent<Player>() != this.owner) {
+            DestroySelf();
         }
-        DestroySelf();
+        
     } 
 }

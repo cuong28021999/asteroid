@@ -1,8 +1,8 @@
 using UnityEngine;
 using Cinemachine;
+using UnityEngine.UI;
 using Mirror;
 using UnityEngine.Experimental.Rendering.Universal;
-using UnityEngine.SceneManagement;
 
 public class Player : NetworkBehaviour
 {
@@ -13,7 +13,9 @@ public class Player : NetworkBehaviour
     public CharacterDatabase characterDB;
     public SpriteRenderer artworkSprite;
 
-    public Transform firePoint;
+    [SyncVar (hook = nameof(OnPlayerNameChanged))]
+    private string strPlayerName = "";
+    [SyncVar]
     public int selectedOption = 0;
 
     [Header("Move variables")]
@@ -32,6 +34,7 @@ public class Player : NetworkBehaviour
 
     [Header("Health")]
     public int maxHealth = 500;
+    [SyncVar (hook = nameof(OnPlayerHpChanged))]
     public int currentHealth;
 
     [Header("Boosting")]
@@ -41,10 +44,32 @@ public class Player : NetworkBehaviour
     public bool isStartCharging;
     public bool isChargingEnergy;
 
+    [Header("PlayerUX")]
+    [SerializeField]
+    private GameObject healBar;
+    [SerializeField]
+    private Text PlayerNameUI;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         cinecam = FindObjectOfType<CinemachineVirtualCamera>();
+    }
+
+    public override void OnStartServer()
+    {   
+        RespawnPlayer();
+    }
+
+    public override void OnStartClient()
+    {
+        healBar.GetComponent<HealthBar>().SetMaxHealth(maxHealth);
+        PlayerNameUI.text = strPlayerName;
+        UpdateCharacter(selectedOption);
+    }
+
+    public override void OnStartAuthority()
+    {
         if (!PlayerPrefs.HasKey("selectedOption"))
         {
             selectedOption = 0;
@@ -53,14 +78,26 @@ public class Player : NetworkBehaviour
         {
             Load();
         }
-
+        CmdSetPlayerNameAndOption(PlayerPrefs.GetString("playerName"), selectedOption);
     }
 
-    public override void OnStartClient()
-    {   
-        RespawnPlayer();
+    [Command]
+    public void CmdSetPlayerNameAndOption(string name, int option) {
+        strPlayerName = name;
+        selectedOption = option;
+        ClientRpcSetPlayerInfo(strPlayerName, selectedOption);
+    }
+
+    [ClientRpc]
+    public void ClientRpcSetPlayerInfo(string name, int option) {
+        // PlayerNameUI.text = strPlayerName;
         UpdateCharacter(selectedOption);
     }
+
+    public void OnPlayerNameChanged(string oldName, string newName) {
+        PlayerNameUI.text = newName;
+    }
+
 
     public override void OnStartLocalPlayer()
     {
@@ -78,19 +115,18 @@ public class Player : NetworkBehaviour
         if(hasAuthority) {
             cinecam.m_Follow = rb.transform;
             cinecam.m_LookAt = rb.transform;
-            
         }
     }
 
     void RespawnPlayer() {
         currentHealth = maxHealth;
         currentMana = 0;
-        StartCharging();
-        StopChargeEnergy();
+        // StartCharging();
+        // StopChargeEnergy();
 
-        FindObjectOfType<HealthBar>().SetMaxHealth(maxHealth);
-        FindObjectOfType<BoostingBar>().SetMaxMana(maxMana);
-        FindObjectOfType<BoostingBar>().SetMana(0);
+        
+        // FindObjectOfType<BoostingBar>().SetMaxMana(maxMana);
+        // FindObjectOfType<BoostingBar>().SetMana(0);
     }
 
     // Update is called once per frame
@@ -180,6 +216,7 @@ public class Player : NetworkBehaviour
     private void Shoot()
     {
         GameObject bullet = Instantiate(this.bulletPrefab, transform.position, transform.rotation);
+        bullet.GetComponent<Bullet>().setPlayer(this);
         // Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
         // bullet.GetComponent<SpriteRenderer>().color = bulletColor;
         // bullet.GetComponent<Bullet>().Project(this.transform.up, isBoosting, bulletColor);
@@ -192,6 +229,9 @@ public class Player : NetworkBehaviour
     {   
         Debug.Log("Player Collision 2D ->" + collision.gameObject.name);
         // damage with velocity
+
+        // if(collision.GetComponent<Bullet>().owner == this) return;
+
         int newDamage = (int)Mathf.Round(velocity) + 2;
         TakeDamage(newDamage);
         Vector3 point = collision.contacts[0].point;
@@ -215,24 +255,28 @@ public class Player : NetworkBehaviour
     [ServerCallback]
     void OnTriggerEnter2D(Collider2D collision)
     {   
-        Debug.Log("OnTriggerEnter2D______PLAYER???");
+        Debug.Log("OnTriggerEnter2D______PLAYER???" + netId);
         // if (collision.gameObject.tag == "Energy")
         // {
         //     isChargingEnergy = true;
         //     WaitFor(0.4f, nameof(StopChargeEnergy));
         // }
+
         
         if (collision.GetComponent<Bullet>() != null)
         {   
-            TakeDamage(collision.GetComponent<Bullet>().damage);
-            // currentHealth -= collision.GetComponent<Bullet>().damage;
-            if (currentHealth <= 0)
-                NetworkServer.Destroy(gameObject);
+            // Debug.Log("Vao day >>>>>>>>>>" + collision.GetComponent<Bullet>().owner);
+            if(collision.GetComponent<Bullet>().owner != this) {
+                Debug.Log("++++++Player: " + netId + "Take..." + collision.GetComponent<Bullet>().damage);
+                TakeDamage(collision.GetComponent<Bullet>().damage);
+            }
         }
     }
 
+    // [Server]
     public void TakeDamage(int newDamage)
     {
+        Debug.Log("Player: " + netId + "Take..." + newDamage);
         if (currentHealth - newDamage <= maxHealth)
         {
             currentHealth -= newDamage;
@@ -254,8 +298,11 @@ public class Player : NetworkBehaviour
             // int currentSceneId = SceneManager.GetActiveScene().buildIndex;
             // SceneManager.LoadScene(currentSceneId + 1);
         }
+    }
 
-        FindObjectOfType<HealthBar>().SetHealth(currentHealth);
+    void OnPlayerHpChanged(int oldValue, int newValue) {
+        healBar.GetComponent<HealthBar>().SetHealth(newValue);
+        // FindObjectOfType<HealthBar>().SetHealth(currentHealth);
     }
 
     void WaitFor(float second, string functionName)
@@ -275,7 +322,6 @@ public class Player : NetworkBehaviour
 
     private void UpdateCharacter(int i)
     {
-        // Debug.Log()
         Character character = characterDB.GetCharacter(i);
         artworkSprite = Instantiate(character.characterSprite, transform);
         artworkSprite.transform.localScale *= 3f;

@@ -5,6 +5,8 @@ using Mirror;
 
 public class GameNetwork : NetworkManager
 {
+
+    public static string SERVER_IP = "localhost";
     public override void OnStartServer()
     {
         base.OnStartServer();
