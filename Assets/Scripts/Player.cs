@@ -9,6 +9,8 @@ public class Player : NetworkBehaviour
     private Rigidbody2D rb;
     private CinemachineVirtualCamera cinecam;
 
+    public ParticleSystem collisionEffect;
+
     [Header("Character")]
     public CharacterDatabase characterDB;
     public SpriteRenderer artworkSprite;
@@ -227,16 +229,19 @@ public class Player : NetworkBehaviour
     [ServerCallback]
     void OnCollisionEnter2D(Collision2D collision)
     {   
-        Debug.Log("Player Collision 2D ->" + collision.gameObject.name);
         // damage with velocity
 
         // if(collision.GetComponent<Bullet>().owner == this) return;
+        if(collision.gameObject.GetComponent<Bullet>()!= null) {
+            Vector3 point = collision.contacts[0].point;
+            EffectTakeDamage(point);
+        }
 
-        int newDamage = (int)Mathf.Round(velocity) + 2;
-        TakeDamage(newDamage);
-        Vector3 point = collision.contacts[0].point;
+        // int newDamage = (int)Mathf.Round(velocity) + 2;
+        // TakeDamage(newDamage);
+        // Vector3 point = collision.contacts[0].point;
 
-        FindObjectOfType<GameManager>().ImpactEffectStart(point);
+        // FindObjectOfType<GameManager>().ImpactEffectStart(point);
     }
 
     /*    private void OnCollisionStay2D(Collision2D collision)
@@ -253,24 +258,22 @@ public class Player : NetworkBehaviour
         }*/
 
     [ServerCallback]
-    void OnTriggerEnter2D(Collider2D collision)
+    void OnTriggerEnter2D(Collider2D other)
     {   
-        Debug.Log("OnTriggerEnter2D______PLAYER???" + netId);
-        // if (collision.gameObject.tag == "Energy")
-        // {
-        //     isChargingEnergy = true;
-        //     WaitFor(0.4f, nameof(StopChargeEnergy));
-        // }
-
-        
-        if (collision.GetComponent<Bullet>() != null)
+        if (other.GetComponent<Bullet>() != null)
         {   
             // Debug.Log("Vao day >>>>>>>>>>" + collision.GetComponent<Bullet>().owner);
-            if(collision.GetComponent<Bullet>().owner != this) {
-                Debug.Log("++++++Player: " + netId + "Take..." + collision.GetComponent<Bullet>().damage);
-                TakeDamage(collision.GetComponent<Bullet>().damage);
+            if(other.GetComponent<Bullet>().owner != this) {
+                // Debug.Log("++++++Player: " + netId + "Take..." + collision.GetComponent<Bullet>().damage);
+                TakeDamage(other.GetComponent<Bullet>().damage);
             }
         }
+    }
+
+    [ClientRpc]
+    public void EffectTakeDamage(Vector3 point) {
+        this.collisionEffect.transform.position = point;
+        this.collisionEffect.Play();
     }
 
     // [Server]
