@@ -18,7 +18,8 @@ public class Bullet : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void setPlayer(Player p) {
+    public void setPlayer(Player p)
+    {
         this.owner = p;
     }
 
@@ -30,7 +31,8 @@ public class Bullet : NetworkBehaviour
         {
             rb.AddForce(direction * this.speed * 2f);
 
-        } else
+        }
+        else
         {
             rb.AddForce(direction * this.speed);
         }
@@ -40,27 +42,25 @@ public class Bullet : NetworkBehaviour
 
     public override void OnStartServer()
     {
-        
+
         Invoke(nameof(DestroySelf), maxLifetime);
-        // Debug.Log("New Bullet Created::" + this.owner);
-        // OnCreateBullet();
     }
 
     public override void OnStartClient()
     {
         // base.OnStartClient();
-        Debug.Log("New Bullet Created::" + this.owner.netId);
     }
 
     [ClientRpc]
-    public void OnCreateBullet() {
-        Debug.Log("New Bullet Created::" + this.owner);
+    public void OnCreateBullet()
+    {
+        // Debug.Log("New Bullet Created::" + this.owner);
     }
 
     // set velocity for server and client. this way we don't have to sync the
     // position, because both the server and the client simulate it.
     void Start()
-    {   
+    {
         rb.AddForce(transform.up * speed);
     }
 
@@ -68,20 +68,27 @@ public class Bullet : NetworkBehaviour
     [Server]
     void DestroySelf()
     {
-        
+
         NetworkServer.Destroy(gameObject);
     }
 
     // ServerCallback because we don't want a warning
     // if OnTriggerEnter is called on the client
     [ServerCallback]
-    void OnTriggerEnter2D(Collider2D other) {
+    void OnTriggerEnter2D(Collider2D other)
+    {
         // if(other.gameObject.name != "Boundary") {
         //     Debug.Log("OnTriggerEnter2D" + other.gameObject.name);
         // }
-        if(other.GetComponent<Player>() != this.owner) {
-            DestroySelf();
+        Player player = other.GetComponent<Player>();
+        if (player != this.owner)
+        {
+            if (player != null && player.isPlaying)
+            {
+                DestroySelf();
+            }
+
         }
-        
-    } 
+
+    }
 }

@@ -15,36 +15,33 @@ public class Player : NetworkBehaviour
     public CharacterDatabase characterDB;
     public SpriteRenderer artworkSprite;
 
-    [SyncVar (hook = nameof(OnPlayerNameChanged))]
+    [SyncVar(hook = nameof(OnPlayerNameChanged))]
     private string strPlayerName = "";
     [SyncVar]
     public int selectedOption = 0;
 
     [Header("Move variables")]
     public float moveSpeed = 5f;
-    public float normalSpeed = 5f;
-    public float boostSpeed = 10f;
-    public bool isBoosting = false;
     public float turnSpeed = 4.5f;
     public float velocity = 0f;
+    public float delayRespawn = 5f;
+
+    public float timeRespawn = 5f;
+    [SyncVar(hook = nameof(OnPlayerStateChanged))]
+    public bool isPlaying = false;
 
     private Vector2 movement;
     private Vector2 turn;
     private float angle;
 
     public GameObject bulletPrefab;
+    //set active/dia object nayf ddeer show player?
+    public GameObject spacescarft;
 
     [Header("Health")]
     public int maxHealth = 500;
-    [SyncVar (hook = nameof(OnPlayerHpChanged))]
+    [SyncVar(hook = nameof(OnPlayerHpChanged))]
     public int currentHealth;
-
-    [Header("Boosting")]
-    public float maxMana = 100f;
-    public float currentMana;
-    public float manaScale = 1f;
-    public bool isStartCharging;
-    public bool isChargingEnergy;
 
     [Header("PlayerUX")]
     [SerializeField]
@@ -59,8 +56,8 @@ public class Player : NetworkBehaviour
     }
 
     public override void OnStartServer()
-    {   
-        RespawnPlayer();
+    {
+        SpawnPlayer();
     }
 
     public override void OnStartClient()
@@ -84,19 +81,22 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSetPlayerNameAndOption(string name, int option) {
+    public void CmdSetPlayerNameAndOption(string name, int option)
+    {
         strPlayerName = name;
         selectedOption = option;
         ClientRpcSetPlayerInfo(strPlayerName, selectedOption);
     }
 
     [ClientRpc]
-    public void ClientRpcSetPlayerInfo(string name, int option) {
+    public void ClientRpcSetPlayerInfo(string name, int option)
+    {
         // PlayerNameUI.text = strPlayerName;
         UpdateCharacter(selectedOption);
     }
 
-    public void OnPlayerNameChanged(string oldName, string newName) {
+    public void OnPlayerNameChanged(string oldName, string newName)
+    {
         PlayerNameUI.text = newName;
     }
 
@@ -114,33 +114,54 @@ public class Player : NetworkBehaviour
 
     private void Start()
     {
-        if(hasAuthority) {
+        if (hasAuthority)
+        {
             cinecam.m_Follow = rb.transform;
             cinecam.m_LookAt = rb.transform;
         }
     }
 
-    void RespawnPlayer() {
+    [Server]
+    void ServerRespawnPlayer()
+    {
+        Debug.Log("RespawnPlayer " + netId);
+        isPlaying = true;
         currentHealth = maxHealth;
-        currentMana = 0;
-        // StartCharging();
+        PlayerRespawnRpc();
+    }
+
+    [ClientRpc]
+    void PlayerRespawnRpc() {
+        spacescarft.SetActive(true);
+        healBar.GetComponent<HealthBar>().SetValue(currentHealth);
+    }
+    void SpawnPlayer()
+    {
+        isPlaying = true;
+        currentHealth = maxHealth;
         // StopChargeEnergy();
 
-        
+        spacescarft.SetActive(true);
+
+
         // FindObjectOfType<BoostingBar>().SetMaxMana(maxMana);
         // FindObjectOfType<BoostingBar>().SetMana(0);
     }
+
+
 
     // Update is called once per frame
     [Client]
     public void Update()
     {
         if (!hasAuthority) return;
+        if (!isPlaying) return;
         // input move
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
 
-        if(isLocalPlayer) {
+        if (isLocalPlayer)
+        {
             // rotate
             turn = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
             turn.Normalize();
@@ -153,56 +174,6 @@ public class Player : NetworkBehaviour
                 Shoot();
             }
         }
-
-        // immediate charge after done delay
-        if (Input.GetKeyUp(KeyCode.LeftShift) && currentMana == 0 && FindObjectOfType<CinemachineVirtualCamera>().m_Lens.OrthographicSize == 5f)
-        {
-            StartCharging();
-        }
-
-        // // check boosting
-        // if (Input.GetKey(KeyCode.LeftShift) && isStartCharging)
-        // {
-        //     isBoosting = true;
-        //     moveSpeed = boostSpeed;
-
-        //     if (!isChargingEnergy)
-        //     {
-        //         // using mana
-        //         if (currentMana <= 0)
-        //         {
-        //             currentMana = 0;
-        //             isBoosting = false;
-        //             isStartCharging = false;
-        //             WaitFor(3f, nameof(StartCharging));
-        //         }
-        //         else
-        //         {
-        //             currentMana -= manaScale * 0.7f;
-        //         }
-        //     }
-        // }
-        // else
-        // {
-        //     isBoosting = false;
-        //     moveSpeed = normalSpeed;
-
-        //     if (!isChargingEnergy)
-        //     {
-        //         // charging mana
-        //         if (currentMana >= maxMana)
-        //         {
-        //             currentMana = maxMana;
-        //         }
-        //         else if (isStartCharging)
-        //         {
-        //             currentMana += manaScale;
-        //         }
-        //     }
-        // }
-        // FindObjectOfType<BoostingBar>().SetMana(currentMana);
-
-        // velocity = rb.velocity.magnitude;
     }
 
     public void FixedUpdate()
@@ -211,7 +182,7 @@ public class Player : NetworkBehaviour
         // don't control other player's rackets
         if (isLocalPlayer)
             rb.velocity = movement * moveSpeed * Time.fixedDeltaTime;
-        
+
     }
 
     [Command]
@@ -228,11 +199,12 @@ public class Player : NetworkBehaviour
 
     [ServerCallback]
     void OnCollisionEnter2D(Collision2D collision)
-    {   
+    {
         // damage with velocity
-
+        if(!isPlaying) return;
         // if(collision.GetComponent<Bullet>().owner == this) return;
-        if(collision.gameObject.GetComponent<Bullet>()!= null) {
+        if (collision.gameObject.GetComponent<Bullet>() != null)
+        {
             Vector3 point = collision.contacts[0].point;
             EffectTakeDamage(point);
         }
@@ -259,11 +231,13 @@ public class Player : NetworkBehaviour
 
     [ServerCallback]
     void OnTriggerEnter2D(Collider2D other)
-    {   
+    {
+        if(!isPlaying) return;
         if (other.GetComponent<Bullet>() != null)
-        {   
+        {
             // Debug.Log("Vao day >>>>>>>>>>" + collision.GetComponent<Bullet>().owner);
-            if(other.GetComponent<Bullet>().owner != this) {
+            if (other.GetComponent<Bullet>().owner != this)
+            {
                 // Debug.Log("++++++Player: " + netId + "Take..." + collision.GetComponent<Bullet>().damage);
                 TakeDamage(other.GetComponent<Bullet>().damage);
             }
@@ -271,64 +245,75 @@ public class Player : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void EffectTakeDamage(Vector3 point) {
+    public void EffectTakeDamage(Vector3 point)
+    {
         this.collisionEffect.transform.position = point;
         this.collisionEffect.Play();
     }
 
-    // [Server]
+    [Server]
     public void TakeDamage(int newDamage)
     {
-        Debug.Log("Player: " + netId + "Take..." + newDamage);
-        if (currentHealth - newDamage <= maxHealth)
-        {
-            currentHealth -= newDamage;
-        }
-        else
-        {
-            currentHealth = maxHealth;
-        }
+        // Debug.Log("Player: " + netId + "Take..." + newDamage);
+        currentHealth -= newDamage;
+        if (currentHealth < 0) currentHealth = 0;
+        // if (currentHealth - newDamage <= maxHealth)
+        // {
+        //     currentHealth -= newDamage;
+        // }
+        // else
+        // {
+        //     currentHealth = maxHealth;
+        // }
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 && isPlaying)
         {
-            NetworkServer.Destroy(gameObject);
-            // // game over
 
-            // // save score
-            // Save();
+            //destroy playser
+            OnPlayerDestroyRpc();
+            OnTargerDestroyRpc();
 
-            // // change to game over scene
-            // int currentSceneId = SceneManager.GetActiveScene().buildIndex;
-            // SceneManager.LoadScene(currentSceneId + 1);
+            isPlaying = false;
+            Invoke("ServerRespawnPlayer", delayRespawn);
+            // NetworkServer.Destroy(gameObject);
+
         }
     }
 
-    void OnPlayerHpChanged(int oldValue, int newValue) {
+    [ClientRpc]
+    void OnPlayerDestroyRpc()
+    {
+        Debug.Log("BoardCast ---> Player " + strPlayerName + " is DEAD....");
+        spacescarft.SetActive(false);
+    }
+
+    [TargetRpc]
+    void OnTargerDestroyRpc()
+    {
+        Debug.Log("YOU ARE DEAD!!");
+        // spacescarft.SetActive(false);
+    }
+
+    void OnPlayerHpChanged(int oldValue, int newValue)
+    {
         healBar.GetComponent<HealthBar>().SetHealth(newValue);
         // FindObjectOfType<HealthBar>().SetHealth(currentHealth);
     }
 
-    void WaitFor(float second, string functionName)
+    void OnPlayerStateChanged(bool oldValue, bool newValue)
     {
-        Invoke(functionName, second);
-    }
-
-    void StopChargeEnergy()
-    {
-        isChargingEnergy = false;
-    }
-
-    void StartCharging()
-    {
-        isStartCharging = true;
+        // if (!newValue)
+        // {
+        //     Debug.Log("Player " + strPlayerName + " is DEAD....");
+        // }
     }
 
     private void UpdateCharacter(int i)
     {
         Character character = characterDB.GetCharacter(i);
-        artworkSprite = Instantiate(character.characterSprite, transform);
+        artworkSprite = Instantiate(character.characterSprite, spacescarft.transform);
         artworkSprite.transform.localScale *= 3f;
-        artworkSprite.transform.parent = gameObject.transform;
+        artworkSprite.transform.parent = spacescarft.transform;
 
         // scale light
         Light2D[] lights = artworkSprite.gameObject.GetComponentsInChildren<Light2D>();
@@ -348,7 +333,8 @@ public class Player : NetworkBehaviour
         selectedOption = PlayerPrefs.GetInt("selectedOption");
     }
 
-    private void Save() {
+    private void Save()
+    {
         PlayerPrefs.SetInt("score", FindObjectOfType<GameManager>().score);
     }
 }

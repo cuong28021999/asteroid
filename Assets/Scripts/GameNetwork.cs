@@ -26,4 +26,5 @@ public class GameNetwork : NetworkManager
     {
         base.OnServerDisconnect(conn);
     }
+
 }

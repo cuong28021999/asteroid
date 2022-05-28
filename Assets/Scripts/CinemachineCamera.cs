@@ -15,27 +15,27 @@ public class CinemachineCamera : MonoBehaviour
     private void Update()
     {
         return;
-        Player player = FindObjectOfType<Player>();
-        float offset = player.velocity / DefaultOrthographicSize;
-        if (player.isBoosting)
-        {
-            if (cinemachineCamera.m_Lens.OrthographicSize >= MaxOrthographicSize)
-            {
-                SetOrthographicSize(MaxOrthographicSize);
-            } else
-            {
-                SetOrthographicSize(cinemachineCamera.m_Lens.OrthographicSize + 1.5f * Time.deltaTime);
-            }
-        } else
-        {
-            if (cinemachineCamera.m_Lens.OrthographicSize > DefaultOrthographicSize)
-            {
-                SetOrthographicSize(cinemachineCamera.m_Lens.OrthographicSize - 1.5f * Time.deltaTime);
-            } else
-            {
-                SetOrthographicSize(DefaultOrthographicSize);
-            }
-        }
+        // Player player = FindObjectOfType<Player>();
+        // float offset = player.velocity / DefaultOrthographicSize;
+        // // if (player.isBoosting)
+        // {
+        //     if (cinemachineCamera.m_Lens.OrthographicSize >= MaxOrthographicSize)
+        //     {
+        //         SetOrthographicSize(MaxOrthographicSize);
+        //     } else
+        //     {
+        //         SetOrthographicSize(cinemachineCamera.m_Lens.OrthographicSize + 1.5f * Time.deltaTime);
+        //     }
+        // } else
+        // {
+            // if (cinemachineCamera.m_Lens.OrthographicSize > DefaultOrthographicSize)
+            // {
+            //     SetOrthographicSize(cinemachineCamera.m_Lens.OrthographicSize - 1.5f * Time.deltaTime);
+            // } else
+            // {
+            //     SetOrthographicSize(DefaultOrthographicSize);
+            // }
+        // }
     }
 
     public void SetOrthographicSize(float value)

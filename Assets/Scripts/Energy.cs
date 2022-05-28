@@ -9,13 +9,13 @@ public class Energy : MonoBehaviour
         if (collision.gameObject.tag == "Player")
         {
             Player player = FindObjectOfType<Player>();
-            if (player.currentMana + value <= player.maxMana)
-            {
-                player.currentMana += value;
-            } else
-            {
-                player.currentMana = player.maxMana;
-            }
+            // if (player.currentMana + value <= player.maxMana)
+            // {
+            //     player.currentMana += value;
+            // } else
+            // {
+            //     player.currentMana = player.maxMana;
+            // }
         }
     }
 

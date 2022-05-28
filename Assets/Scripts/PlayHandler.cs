@@ -20,6 +20,7 @@ public class PlayHandler : MonoBehaviour
         gameNetwork.StartClient();
 
         lobbyUI.SetActive(false);
+        characterManager.artworkSprite.gameObject.SetActive(false);
     }
 
     public void OnHostServer()
@@ -30,5 +31,6 @@ public class PlayHandler : MonoBehaviour
         gameNetwork.StartHost();
 
         lobbyUI.SetActive(false);
+        characterManager.artworkSprite.gameObject.SetActive(false);
     }
 }

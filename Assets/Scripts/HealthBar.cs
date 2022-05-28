@@ -17,10 +17,14 @@ public class HealthBar : MonoBehaviour
         value = health;
     }
 
+    public void SetValue(int health)
+    {
+        value = health;
+        slider.value = value;
+    }
+
     private void Update()
     {
-       
-            slider.value = Mathf.MoveTowards(slider.value, value, speedSlide * Time.deltaTime);
-        
+        slider.value = Mathf.MoveTowards(slider.value, value, speedSlide * Time.deltaTime);
     }
 }
