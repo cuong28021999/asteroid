@@ -6,9 +6,9 @@ public class PlayHandler : MonoBehaviour
 {
     public CharacterManager characterManager;
     [SerializeField]
-    private GameNetwork gameNetwork = null;
-    [SerializeField]
     private GameObject lobbyUI;
+    public ClientStartUp clientStartUp;
+    public ServerStartUp serverStartUp;
 
     public void OnPlayGame()
     {
@@ -16,8 +16,7 @@ public class PlayHandler : MonoBehaviour
         characterManager.SetPlayerName(characterManager.nameInput.text);
         characterManager.SavePlayerName();
 
-        gameNetwork.networkAddress = GameNetwork.SERVER_IP;
-        gameNetwork.StartClient();
+        clientStartUp.OnLoginUserButtonClick();
 
         lobbyUI.SetActive(false);
         characterManager.artworkSprite.gameObject.SetActive(false);
@@ -28,7 +27,9 @@ public class PlayHandler : MonoBehaviour
         // set name player
         characterManager.SetPlayerName(characterManager.nameInput.text);
         characterManager.SavePlayerName();
-        gameNetwork.StartHost();
+
+        serverStartUp.OnStartLocalServerButtonClick();
+        // gameNetwork.StartHost();
 
         lobbyUI.SetActive(false);
         characterManager.artworkSprite.gameObject.SetActive(false);

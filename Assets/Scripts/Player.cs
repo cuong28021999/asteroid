@@ -120,7 +120,6 @@ public class Player : NetworkBehaviour
             cinecam.m_LookAt = rb.transform;
         }
     }
-
     [Server]
     void ServerRespawnPlayer()
     {
