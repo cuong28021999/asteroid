@@ -8,7 +8,7 @@ public class Bullet : NetworkBehaviour
     public int damage = 20;
 
     [SyncVar]
-    public Player owner = null;
+    public uint ownerNetId;
 
     public Color color;
     private Rigidbody2D rb;
@@ -18,43 +18,15 @@ public class Bullet : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void setPlayer(Player p)
+    public void SetOwnerNetId(uint ownerNetId)
     {
-        this.owner = p;
-    }
-
-    public void Project(Vector2 direction, bool isBoosting, Color c)
-    {
-        color = c;
-
-        if (isBoosting)
-        {
-            rb.AddForce(direction * this.speed * 2f);
-
-        }
-        else
-        {
-            rb.AddForce(direction * this.speed);
-        }
-
-        Destroy(this.gameObject, this.maxLifetime);
+        this.ownerNetId = ownerNetId;
     }
 
     public override void OnStartServer()
     {
 
         Invoke(nameof(DestroySelf), maxLifetime);
-    }
-
-    public override void OnStartClient()
-    {
-        // base.OnStartClient();
-    }
-
-    [ClientRpc]
-    public void OnCreateBullet()
-    {
-        // Debug.Log("New Bullet Created::" + this.owner);
     }
 
     // set velocity for server and client. this way we don't have to sync the
@@ -65,10 +37,9 @@ public class Bullet : NetworkBehaviour
     }
 
     // destroy for everyone on the server
-    [Server]
+    [ServerCallback]
     void DestroySelf()
     {
-
         NetworkServer.Destroy(gameObject);
     }
 
@@ -77,18 +48,13 @@ public class Bullet : NetworkBehaviour
     [ServerCallback]
     void OnTriggerEnter2D(Collider2D other)
     {
-        // if(other.gameObject.name != "Boundary") {
-        //     Debug.Log("OnTriggerEnter2D" + other.gameObject.name);
-        // }
         Player player = other.GetComponent<Player>();
-        if (player != this.owner)
+        if (player != null)
         {
-            if (player != null && player.isPlaying)
+            if (player.netId != ownerNetId && player.isPlaying)
             {
                 DestroySelf();
             }
-
         }
-
     }
 }

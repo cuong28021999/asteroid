@@ -15,10 +15,7 @@ public class ServerStartUp : MonoBehaviour
 	{
 		if (configuration.buildType == BuildType.REMOTE_SERVER)
 		{
-			Debug.Log("StartServer??? ---->");
 			networkManager.StartServer();
-			// networkManager.StartHost();
-			Debug.Log("StartServer DONE??? ---->");
 		}
 	}
 
@@ -26,11 +23,9 @@ public class ServerStartUp : MonoBehaviour
 	{
 		if (configuration.buildType == BuildType.LOCAL_SERVER)
 		{
-			networkManager.StartHost();
-		} else {
 			networkManager.StartServer();
+		} else {
+			networkManager.StartHost();
 		}
 	}
-
-
 }

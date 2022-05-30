@@ -22,11 +22,10 @@ public class Player : NetworkBehaviour
 
     [Header("Move variables")]
     public float moveSpeed = 5f;
-    public float turnSpeed = 4.5f;
+    public float turnSpeed = 0.5f;
     public float velocity = 0f;
     public float delayRespawn = 5f;
 
-    public float timeRespawn = 5f;
     [SyncVar(hook = nameof(OnPlayerStateChanged))]
     public bool isPlaying = false;
 
@@ -91,7 +90,6 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     public void ClientRpcSetPlayerInfo(string name, int option)
     {
-        // PlayerNameUI.text = strPlayerName;
         UpdateCharacter(selectedOption);
     }
 
@@ -103,13 +101,7 @@ public class Player : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        Debug.Log("OnStartLocalPlayer");
 
-        // // Set isLocalPlayer for this Player in UI for background shading
-        // playerUI.SetLocalPlayer();
-
-        // Activate the main panel
-        // CanvasUI.instance.mainPanel.gameObject.SetActive(true);
     }
 
     private void Start()
@@ -123,7 +115,10 @@ public class Player : NetworkBehaviour
     [Server]
     void ServerRespawnPlayer()
     {
-        Debug.Log("RespawnPlayer " + netId);
+        GameNetwork gameNetwork = FindObjectOfType<GameNetwork>();
+        Vector3 newSpawnPoint = gameNetwork.GetRandomSpawnPoint();
+        this.transform.position = newSpawnPoint;
+        
         isPlaying = true;
         currentHealth = maxHealth;
         PlayerRespawnRpc();
@@ -132,25 +127,17 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     void PlayerRespawnRpc() {
         spacescarft.SetActive(true);
-        healBar.GetComponent<HealthBar>().SetValue(currentHealth);
+        healBar.GetComponent<HealthBar>().SetValue(maxHealth);
     }
     void SpawnPlayer()
     {
         isPlaying = true;
         currentHealth = maxHealth;
-        // StopChargeEnergy();
-
         spacescarft.SetActive(true);
-
-
-        // FindObjectOfType<BoostingBar>().SetMaxMana(maxMana);
-        // FindObjectOfType<BoostingBar>().SetMana(0);
     }
 
-
-
     // Update is called once per frame
-    [Client]
+    [ClientCallback]
     public void Update()
     {
         if (!hasAuthority) return;
@@ -188,10 +175,12 @@ public class Player : NetworkBehaviour
     private void Shoot()
     {
         GameObject bullet = Instantiate(this.bulletPrefab, transform.position, transform.rotation);
-        bullet.GetComponent<Bullet>().setPlayer(this);
+        bullet.GetComponent<Bullet>().SetOwnerNetId(netId);
+
         // Color bulletColor = characterDB.GetCharacter(selectedOption).bulletColor;
         // bullet.GetComponent<SpriteRenderer>().color = bulletColor;
         // bullet.GetComponent<Bullet>().Project(this.transform.up, isBoosting, bulletColor);
+
         NetworkServer.Spawn(bullet);
 
     }
@@ -207,12 +196,6 @@ public class Player : NetworkBehaviour
             Vector3 point = collision.contacts[0].point;
             EffectTakeDamage(point);
         }
-
-        // int newDamage = (int)Mathf.Round(velocity) + 2;
-        // TakeDamage(newDamage);
-        // Vector3 point = collision.contacts[0].point;
-
-        // FindObjectOfType<GameManager>().ImpactEffectStart(point);
     }
 
     /*    private void OnCollisionStay2D(Collision2D collision)
@@ -234,10 +217,8 @@ public class Player : NetworkBehaviour
         if(!isPlaying) return;
         if (other.GetComponent<Bullet>() != null)
         {
-            // Debug.Log("Vao day >>>>>>>>>>" + collision.GetComponent<Bullet>().owner);
-            if (other.GetComponent<Bullet>().owner != this)
+            if (other.GetComponent<Bullet>().ownerNetId != netId)
             {
-                // Debug.Log("++++++Player: " + netId + "Take..." + collision.GetComponent<Bullet>().damage);
                 TakeDamage(other.GetComponent<Bullet>().damage);
             }
         }
@@ -253,29 +234,18 @@ public class Player : NetworkBehaviour
     [Server]
     public void TakeDamage(int newDamage)
     {
-        // Debug.Log("Player: " + netId + "Take..." + newDamage);
         currentHealth -= newDamage;
         if (currentHealth < 0) currentHealth = 0;
-        // if (currentHealth - newDamage <= maxHealth)
-        // {
-        //     currentHealth -= newDamage;
-        // }
-        // else
-        // {
-        //     currentHealth = maxHealth;
-        // }
+
 
         if (currentHealth <= 0 && isPlaying)
         {
-
             //destroy playser
             OnPlayerDestroyRpc();
             OnTargerDestroyRpc();
 
             isPlaying = false;
             Invoke("ServerRespawnPlayer", delayRespawn);
-            // NetworkServer.Destroy(gameObject);
-
         }
     }
 
@@ -296,15 +266,11 @@ public class Player : NetworkBehaviour
     void OnPlayerHpChanged(int oldValue, int newValue)
     {
         healBar.GetComponent<HealthBar>().SetHealth(newValue);
-        // FindObjectOfType<HealthBar>().SetHealth(currentHealth);
     }
 
     void OnPlayerStateChanged(bool oldValue, bool newValue)
     {
-        // if (!newValue)
-        // {
-        //     Debug.Log("Player " + strPlayerName + " is DEAD....");
-        // }
+
     }
 
     private void UpdateCharacter(int i)
