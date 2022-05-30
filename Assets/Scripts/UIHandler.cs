@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class UIHandler : MonoBehaviour
 {
-
     public Configuration configuration;
     public CharacterManager characterManager;
     [SerializeField]
@@ -57,12 +56,10 @@ public class UIHandler : MonoBehaviour
     }
 
     public void Update() {
-        Debug.Log(rectTransformCharacter.transform.position);    
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(rectTransformCharacter.transform.position);
         worldPoint.z = 0;
         characterManager.gameObject.transform.position = worldPoint;
         characterManager.gameObject.transform.localScale = rectTransformCharacter.transform.localScale * 0.3f;
-        Debug.Log(characterManager.gameObject.transform.position);
     }
 
     void HideDisconect() {

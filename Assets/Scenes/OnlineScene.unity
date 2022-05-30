@@ -5926,7 +5926,7 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 4792857663700243066, guid: 9a57966ebe802ba4faf094f84ec2be30, type: 3}
-  spawnDistance: 3
+  spawnDistance: 10
   uIHandler: {fileID: 843320536}
 --- !u!4 &645527194
 Transform:

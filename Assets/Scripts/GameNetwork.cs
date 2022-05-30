@@ -12,7 +12,6 @@ public class GameNetwork : NetworkManager
     public override void OnStartServer()
     {
         base.OnStartServer();
-        Debug.Log("----> OnStartServer");
     }
 
     public override void OnStartClient()
@@ -36,7 +35,6 @@ public class GameNetwork : NetworkManager
     {
     // add player at correct spawn position
         Vector3 spawnPoint = GetRandomSpawnPoint();
-        Debug.Log(spawnPoint);
         GameObject player = Instantiate(playerPrefab, spawnPoint, Quaternion.identity);
         NetworkServer.AddPlayerForConnection(conn, player);
         // base.OnServerAddPlayer(conn);

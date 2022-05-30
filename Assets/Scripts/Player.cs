@@ -28,6 +28,8 @@ public class Player : NetworkBehaviour
 
     [SyncVar(hook = nameof(OnPlayerStateChanged))]
     public bool isPlaying = false;
+    [SyncVar]
+    public bool isInited = false;
 
     private Vector2 movement;
     private Vector2 turn;
@@ -62,8 +64,12 @@ public class Player : NetworkBehaviour
     public override void OnStartClient()
     {
         healBar.GetComponent<HealthBar>().SetMaxHealth(maxHealth);
-        PlayerNameUI.text = strPlayerName;
-        UpdateCharacter(selectedOption);
+        //connect vào các server có client sẵn -> objec inited -> update luôn tên
+        if(isInited) {
+            PlayerNameUI.text = strPlayerName;
+            UpdateCharacter(selectedOption);
+        }
+        
     }
 
     public override void OnStartAuthority()
@@ -84,24 +90,19 @@ public class Player : NetworkBehaviour
     {
         strPlayerName = name;
         selectedOption = option;
-        ClientRpcSetPlayerInfo(strPlayerName, selectedOption);
+        isInited = true;
+        ClientRpcSetPlayerInfo(name, option);
     }
 
     [ClientRpc]
     public void ClientRpcSetPlayerInfo(string name, int option)
     {
-        UpdateCharacter(selectedOption);
+        UpdateCharacter(option);
     }
 
     public void OnPlayerNameChanged(string oldName, string newName)
     {
         PlayerNameUI.text = newName;
-    }
-
-
-    public override void OnStartLocalPlayer()
-    {
-
     }
 
     private void Start()

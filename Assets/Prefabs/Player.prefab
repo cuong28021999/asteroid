@@ -5712,7 +5712,7 @@ MonoBehaviour:
   artworkSprite: {fileID: 8037156903799578214, guid: aa1ed1f4c4022994c8e63a1a0a8497d8, type: 3}
   selectedOption: 0
   moveSpeed: 100
-  turnSpeed: 0.5
+  turnSpeed: 4.5
   velocity: 0
   delayRespawn: 5
   isPlaying: 0
