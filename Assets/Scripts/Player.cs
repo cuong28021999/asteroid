@@ -132,6 +132,7 @@ public class Player : NetworkBehaviour
     void PlayerRespawnRpc() {
         spacescarft.SetActive(true);
         healBar.GetComponent<HealthBar>().SetValue(maxHealth);
+        spawnEffect.gameObject.SetActive(true);
         spawnEffect.Play();
     }
     void SpawnPlayer()
@@ -148,8 +149,15 @@ public class Player : NetworkBehaviour
         if (!hasAuthority) return;
         if (!isPlaying) return;
         // input move
-        movement.x = Input.GetAxisRaw("Horizontal");
-        movement.y = Input.GetAxisRaw("Vertical");
+        movement.x += Input.GetAxisRaw("Horizontal");
+        movement.y += Input.GetAxisRaw("Vertical");
+
+        movement.x = Mathf.Max(Mathf.Min(movement.x, moveSpeed), -moveSpeed);
+        movement.y = Mathf.Max(Mathf.Min(movement.y, moveSpeed), -moveSpeed);
+
+        // velocity += Input.GetAxisRaw("Vertical");
+        // velocity = Mathf.Min(velocity, moveSpeed);
+        // velocity = Mathf.Max(velocity, -moveSpeed);
 
         if (isLocalPlayer)
         {
@@ -172,8 +180,7 @@ public class Player : NetworkBehaviour
         // only let the local player control the racket.
         // don't control other player's rackets
         if (isLocalPlayer)
-            transform.position += (movement * moveSpeed * Time.fixedDeltaTime);
-            // rb.velocity = movement * moveSpeed * Time.fixedDeltaTime;
+            rb.velocity = movement * Time.fixedDeltaTime;
 
     }
 

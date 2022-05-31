@@ -25,7 +25,7 @@ public class Bullet : NetworkBehaviour
 
     public override void OnStartServer()
     {
-
+        
         Invoke(nameof(DestroySelf), maxLifetime);
     }
 
@@ -38,13 +38,10 @@ public class Bullet : NetworkBehaviour
         } else if(NetworkClient.active) {
             NetworkIdentity networkIdentity = NetworkClient.connection.identity;
             Player player = networkIdentity.GetComponent<Player>();
-            Debug.Log("IsMyBullet = " + ownerNetId + " <> " + player.netId);
             // transform.position = player.transform;
             if(ownerNetId == player.netId) {
                 transform.position = player.transform.position;
             }
-            
-            // transform, speed, time  -> diem cuoi
             rb.AddForce(transform.up * speed);
         }
     }

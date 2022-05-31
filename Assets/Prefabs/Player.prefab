@@ -5715,8 +5715,8 @@ MonoBehaviour:
   characterDB: {fileID: 11400000, guid: 4c2062e01e36f844b849fa9b2b80c80c, type: 2}
   artworkSprite: {fileID: 8037156903799578214, guid: aa1ed1f4c4022994c8e63a1a0a8497d8, type: 3}
   selectedOption: 0
-  moveSpeed: 5.06
-  turnSpeed: 4.5
+  moveSpeed: 250
+  turnSpeed: 3
   velocity: 0
   delayRespawn: 5
   isPlaying: 0
@@ -5875,6 +5875,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1291324780865256921}
     m_Modifications:
+    - target: {fileID: 769006900400005171, guid: 613f8ebd555979840af1a50310d207eb, type: 3}
+      propertyPath: OnlyDeactivate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 769006900405684723, guid: 613f8ebd555979840af1a50310d207eb, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -5957,6 +5961,10 @@ PrefabInstance:
     - target: {fileID: 1329977497753291661, guid: f97a07e8eabe7af46bd019cb8efa8dc8, type: 3}
       propertyPath: m_Name
       value: Explosion
+      objectReference: {fileID: 0}
+    - target: {fileID: 7735948587855407045, guid: f97a07e8eabe7af46bd019cb8efa8dc8, type: 3}
+      propertyPath: playOnAwake
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8734209663742980094, guid: f97a07e8eabe7af46bd019cb8efa8dc8, type: 3}
       propertyPath: m_RootOrder

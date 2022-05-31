@@ -149,7 +149,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  speed: 750
+  speed: 800
   maxLifetime: 2
   damage: 20
   ownerNetId: 0
