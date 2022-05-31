@@ -31,7 +31,7 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public bool isInited = false;
 
-    private Vector2 movement;
+    private Vector3 movement;
     private Vector2 turn;
     private float angle;
 
@@ -169,7 +169,8 @@ public class Player : NetworkBehaviour
         // only let the local player control the racket.
         // don't control other player's rackets
         if (isLocalPlayer)
-            rb.velocity = movement * moveSpeed * Time.fixedDeltaTime;
+            transform.position += (movement * moveSpeed * Time.fixedDeltaTime);
+            // rb.velocity = movement * moveSpeed * Time.fixedDeltaTime;
 
     }
 

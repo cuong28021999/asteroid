@@ -33,7 +33,20 @@ public class Bullet : NetworkBehaviour
     // position, because both the server and the client simulate it.
     void Start()
     {
-        rb.AddForce(transform.up * speed);
+        if(NetworkServer.active) {
+            rb.AddForce(transform.up * speed);
+        } else if(NetworkClient.active) {
+            NetworkIdentity networkIdentity = NetworkClient.connection.identity;
+            Player player = networkIdentity.GetComponent<Player>();
+            Debug.Log("IsMyBullet = " + ownerNetId + " <> " + player.netId);
+            // transform.position = player.transform;
+            if(ownerNetId == player.netId) {
+                transform.position = player.transform.position;
+            }
+            
+            // transform, speed, time  -> diem cuoi
+            rb.AddForce(transform.up * speed);
+        }
     }
 
     // destroy for everyone on the server

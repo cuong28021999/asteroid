@@ -5711,11 +5711,12 @@ MonoBehaviour:
   characterDB: {fileID: 11400000, guid: 4c2062e01e36f844b849fa9b2b80c80c, type: 2}
   artworkSprite: {fileID: 8037156903799578214, guid: aa1ed1f4c4022994c8e63a1a0a8497d8, type: 3}
   selectedOption: 0
-  moveSpeed: 100
+  moveSpeed: 5.06
   turnSpeed: 4.5
   velocity: 0
   delayRespawn: 5
   isPlaying: 0
+  isInited: 0
   bulletPrefab: {fileID: 4792857663700243066, guid: 9a57966ebe802ba4faf094f84ec2be30, type: 3}
   spacescarft: {fileID: 6884553690505554237}
   maxHealth: 200
