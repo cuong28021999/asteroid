@@ -68,6 +68,7 @@ public class Player : NetworkBehaviour
         if(isInited) {
             PlayerNameUI.text = strPlayerName;
             UpdateCharacter(selectedOption);
+            healBar.GetComponent<HealthBar>().SetValue(currentHealth);
         }
         
     }
