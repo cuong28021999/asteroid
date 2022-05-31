@@ -10,6 +10,8 @@ public class Player : NetworkBehaviour
     private CinemachineVirtualCamera cinecam;
 
     public ParticleSystem collisionEffect;
+    public ParticleSystem explosionEffect;
+    public ParticleSystem spawnEffect;
 
     [Header("Character")]
     public CharacterDatabase characterDB;
@@ -130,6 +132,7 @@ public class Player : NetworkBehaviour
     void PlayerRespawnRpc() {
         spacescarft.SetActive(true);
         healBar.GetComponent<HealthBar>().SetValue(maxHealth);
+        spawnEffect.Play();
     }
     void SpawnPlayer()
     {
@@ -257,6 +260,7 @@ public class Player : NetworkBehaviour
     {
         Debug.Log("BoardCast ---> Player " + strPlayerName + " is DEAD....");
         spacescarft.SetActive(false);
+        explosionEffect.Play();
     }
 
     [TargetRpc]
