@@ -65,6 +65,8 @@ public class Bullet : NetworkBehaviour
             {
                 DestroySelf();
             }
+        } else {
+            DestroySelf();
         }
     }
 }
