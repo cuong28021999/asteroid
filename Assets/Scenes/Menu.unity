@@ -696,7 +696,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 300}
-  m_SizeDelta: {x: 840, y: 480}
+  m_SizeDelta: {x: 1000, y: 480}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &806454867
 MonoBehaviour:
@@ -720,7 +720,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 829f6c968413f5f41a2e176c3d2f1adc, type: 3}
-    m_FontSize: 120
+    m_FontSize: 100
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 0
@@ -731,7 +731,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: ASTEROID
+  m_Text: GALAXY WAR ONLiNE
 --- !u!222 &806454868
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1270,7 +1270,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4186b13da1a6a44cab7c2c331ea47f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterManager: {fileID: 1526781688}
 --- !u!1 &1309610587
 GameObject:
   m_ObjectHideFlags: 0
