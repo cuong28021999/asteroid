@@ -6394,8 +6394,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 43.753906, y: 285.39844}
-  m_SizeDelta: {x: 840, y: 480}
+  m_AnchoredPosition: {x: -3.2, y: 221}
+  m_SizeDelta: {x: 1000, y: 480}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &806454867
 MonoBehaviour:
@@ -6419,7 +6419,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 829f6c968413f5f41a2e176c3d2f1adc, type: 3}
-    m_FontSize: 120
+    m_FontSize: 80
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 0
@@ -6430,7 +6430,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: ASTEROID
+  m_Text: GALAXY WAR ONLINE
 --- !u!222 &806454868
 CanvasRenderer:
   m_ObjectHideFlags: 0
